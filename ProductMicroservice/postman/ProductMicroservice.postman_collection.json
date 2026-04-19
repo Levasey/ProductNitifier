@@ -1,0 +1,50 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
+    "name": "ProductMicroservice",
+    "description": "Product microservice API. server.port=0 in application.properties — set baseUrl to the URL from Spring Boot startup log.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "ProductMicroservice",
+      "item": [
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sample product\",\n  \"price\": 19.99,\n  \"quantity\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product"
+            },
+            "description": "Creates a product. Response: 201 Created, body is productId string."
+          },
+          "response": []
+        }
+      ],
+      "description": "Requests for ProductMicroservice project."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
