@@ -191,6 +191,7 @@ export KAFKA_HOME="$HOME/kafka/current"
 Чтобы остановить **все** три брокера сразу (без указания id):
 
 ```bash
+export KAFKA_HOME="$HOME/kafka/kafka_2.13-4.0.2"
 "$KAFKA_HOME/bin/kafka-server-stop.sh"
 ```
 
