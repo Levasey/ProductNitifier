@@ -8,7 +8,8 @@
 |--------|------------|
 | [`core`](core/) | Общая модель события [`ProductCreatedEvent`](core/src/main/java/com/example/core/ProductCreatedEvent.java) (JAR, без Spring-приложения). |
 | [`ProductMicroservice`](ProductMicroservice/) | REST API: `POST /product` → запись в Kafka, топик **`product-created-events-topic`**. |
-| [`EmailNotificationMicroservice`](EmailNotificationMicroservice/) | Consumer группы `product-created-events`: читает тот же топик и пишет событие в лог. |
+| [`EmailNotificationMicroservice`](EmailNotificationMicroservice/) | Consumer группы `product-created-events`: читает тот же топик, вызывает mock HTTP endpoint и применяет retry/DLT стратегию по типу ошибки. |
+| [`mockservice`](mockservice/) | Локальный HTTP стаб для проверки сценариев успеха/ошибки (`/response/200` и `/response/500`). |
 
 Топик и сериализация JSON настраиваются в коде и в `application.properties` каждого сервиса.
 
@@ -27,11 +28,15 @@
 cd core
 ./mvnw install -DskipTests
 
-# 2. Продюсер (в отдельном терминале)
+# 2. Локальный mock-сервис для проверки HTTP-ответов (в отдельном терминале)
+cd ../mockservice
+./mvnw spring-boot:run
+
+# 3. Продюсер (в отдельном терминале)
 cd ../ProductMicroservice
 ./mvnw spring-boot:run
 
-# 3. Консьюмер (в отдельном терминале)
+# 4. Консьюмер (в отдельном терминале)
 cd ../EmailNotificationMicroservice
 ./mvnw spring-boot:run
 ```
@@ -47,6 +52,25 @@ curl -s -X POST "http://localhost:<PORT_PRODUCT>/product" \
 ```
 
 В логах **EmailNotificationMicroservice** должно появиться сообщение вида `Product created event received: Sample`.
+
+## Профили EmailNotificationMicroservice
+
+В `EmailNotificationMicroservice` URL mock endpoint вынесен в профильные конфиги:
+
+- `application-dev.properties` → `mockservice.response-url=http://localhost:8090/response/200`
+- `application-test.properties` → `mockservice.response-url=http://localhost:8090/response/500`
+- в `application.properties` задан `spring.profiles.default=dev`
+
+Примеры запуска consumer:
+
+```bash
+# Сценарий успеха (200), по умолчанию
+cd EmailNotificationMicroservice
+./mvnw spring-boot:run
+
+# Сценарий ошибки (500) для проверки retry/DLT
+./mvnw spring-boot:run -Dspring-boot.run.profiles=test
+```
 
 ## Документация по ProductMicroservice
 
