@@ -53,6 +53,51 @@ curl -s -X POST "http://localhost:<PORT_PRODUCT>/product" \
 
 В логах **EmailNotificationMicroservice** должно появиться сообщение вида `Product created event received: Sample`.
 
+## Kafka через Docker Compose
+
+В репозитории есть `docker-compose.yml` с Kafka в KRaft-режиме (3 брокера, без Zookeeper).
+
+```bash
+# запуск кластера
+docker compose up -d
+
+# статус сервисов
+docker compose ps
+```
+
+Bootstrap-серверы для приложений на хосте:
+
+- `localhost:9092`
+- `localhost:9094`
+- `localhost:9096`
+
+## Где смотреть логи Kafka
+
+Логи Kafka пишутся в `stdout/stderr` контейнеров (стандартный docker logging driver).
+
+```bash
+# все Kafka-сервисы
+docker compose logs -f kafka-1 kafka-2 kafka-3
+
+# только один брокер
+docker compose logs -f kafka-1
+```
+
+Важно: в `docker-compose.yml` не настроен отдельный файловый лог-том; персистентно сохраняются только данные Kafka (`/bitnami/kafka`) в именованных томах.
+
+## Troubleshooting KRaft
+
+Если один брокер (например, `kafka-1`) уходит в `Exited` с ошибками metadata log, пересоздайте только его том:
+
+```bash
+docker compose rm -f kafka-1
+docker volume rm productnitifier_kafka-1-data
+docker compose up -d kafka-1
+docker compose ps
+```
+
+Это переинициализирует данные только проблемного брокера, не затрагивая остальные сервисы.
+
 ## Профили EmailNotificationMicroservice
 
 В `EmailNotificationMicroservice` URL mock endpoint вынесен в профильные конфиги:
