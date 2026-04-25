@@ -1,4 +1,4 @@
-package com.example.emailnotification.persistance.entity;
+package com.example.emailnotification.persistence.entity;
 
 import jakarta.persistence.*;
 
@@ -8,7 +8,7 @@ public class ProcessedEventEntity {
 
     @Id
     @GeneratedValue
-    private Long Id;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String messageId;
@@ -25,11 +25,11 @@ public class ProcessedEventEntity {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getMessageId() {

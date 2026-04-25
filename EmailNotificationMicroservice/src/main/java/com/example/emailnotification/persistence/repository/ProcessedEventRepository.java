@@ -1,6 +1,6 @@
-package com.example.emailnotification.persistance.repository;
+package com.example.emailnotification.persistence.repository;
 
-import com.example.emailnotification.persistance.entity.ProcessedEventEntity;
+import com.example.emailnotification.persistence.entity.ProcessedEventEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
