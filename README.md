@@ -117,6 +117,18 @@ cd EmailNotificationMicroservice
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=test
 ```
 
+## H2 и веб-консоль (EmailNotificationMicroservice)
+
+Сервис использует **in-memory H2** для JPA (настройки в `application.properties`: `jdbc:h2:mem:testdb`, логин `test`, пароль `test`).
+
+**Spring Boot 4** не подключает веб-консоль H2 «из коробки**: автоконфигурация вынесена в отдельный артефакт. В `EmailNotificationMicroservice/pom.xml` должна быть зависимость `spring-boot-h2console`; без неё `spring.h2.console.enabled=true` не регистрирует UI, и запросы к `/h2-console` дают **404**.
+
+После запуска consumer смотрите **фактический порт** в логе (`server.port=0`) и откройте в браузере:
+
+`http://localhost:<порт-из-логов>/h2-console`
+
+С теми же учётными данными, что и у DataSource, подключитесь к `jdbc:h2:mem:testdb` (только пока JVM процесса ещё жив: база in-memory).
+
 ## Документация по ProductMicroservice
 
 Подробно про API, настройки продюсера Kafka, топик и Postman — в [**ProductMicroservice/README.md**](ProductMicroservice/README.md). Команды для Kafka CLI — в [**ProductMicroservice/KAFKA-KOMANDY.md**](ProductMicroservice/KAFKA-KOMANDY.md).
