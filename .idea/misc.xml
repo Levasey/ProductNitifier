@@ -7,6 +7,11 @@
         <option value="$PROJECT_DIR$/ProductMicroservice/pom.xml" />
         <option value="$PROJECT_DIR$/EmailNotificationMicroservice/pom.xml" />
         <option value="$PROJECT_DIR$/core/pom.xml" />
+        <option value="$PROJECT_DIR$/mockservice/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/TransferService/pom.xml" />
+        <option value="$PROJECT_DIR$/DepositService/pom.xml" />
+        <option value="$PROJECT_DIR$/WithdrawalService/pom.xml" />
       </list>
     </option>
   </component>

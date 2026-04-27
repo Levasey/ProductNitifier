@@ -1,6 +1,6 @@
 package com.example.productmicroservice.service;
 
-import com.example.core.ProductCreatedEvent;
+import com.example.core.events.ProductCreatedEvent;
 import com.example.productmicroservice.service.dto.CreateProductDto;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.support.SendResult;

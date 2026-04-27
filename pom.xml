@@ -16,5 +16,8 @@
         <module>ProductMicroservice</module>
         <module>EmailNotificationMicroservice</module>
         <module>mockservice</module>
+        <module>DepositService</module>
+        <module>TransferService</module>
+        <module>WithdrawalService</module>
     </modules>
 </project>

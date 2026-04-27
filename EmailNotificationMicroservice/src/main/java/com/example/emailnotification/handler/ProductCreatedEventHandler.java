@@ -1,6 +1,6 @@
 package com.example.emailnotification.handler;
 
-import com.example.core.ProductCreatedEvent;
+import com.example.core.events.ProductCreatedEvent;
 import com.example.emailnotification.exception.NonRetryableException;
 import com.example.emailnotification.exception.RetryableException;
 import com.example.emailnotification.persistence.entity.ProcessedEventEntity;
