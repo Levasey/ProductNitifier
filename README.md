@@ -6,12 +6,31 @@
 
 | Модуль | Назначение |
 |--------|------------|
-| [`core`](core/) | Общая модель события [`ProductCreatedEvent`](core/src/main/java/com/example/core/ProductCreatedEvent.java) (JAR, без Spring-приложения). |
+| [`core`](core/) | Общий контракт событий и ошибок (`ProductCreatedEvent`, `DepositRequestedEvent`, `WithdrawalRequestedEvent`, `RetryableException`, `NotRetryableException`) как библиотека для всех сервисов. |
 | [`ProductMicroservice`](ProductMicroservice/) | REST API: `POST /product` → запись в Kafka, топик **`product-created-events-topic`**. |
 | [`EmailNotificationMicroservice`](EmailNotificationMicroservice/) | Consumer группы `product-created-events`: читает тот же топик, вызывает mock HTTP endpoint и применяет retry/DLT стратегию по типу ошибки. |
+| [`TransferService`](TransferService/) | REST API переводов (`POST /transfers`) и публикация событий запросов на списание/зачисление. |
+| [`WithdrawalService`](WithdrawalService/) | Consumer события `WithdrawalRequestedEvent`: обработка шага списания в transfer-flow. |
+| [`DepositService`](DepositService/) | Consumer события `DepositRequestedEvent`: обработка шага зачисления в transfer-flow. |
 | [`mockservice`](mockservice/) | Локальный HTTP стаб для проверки сценариев успеха/ошибки (`/response/200` и `/response/500`). |
 
-Топик и сериализация JSON настраиваются в коде и в `application.properties` каждого сервиса.
+Топики и сериализация JSON настраиваются в коде и в `application.properties` каждого сервиса.
+
+## Event-driven сценарии
+
+В проекте сейчас реализованы два независимых сценария:
+
+1. **Product Notification flow**
+   - `ProductMicroservice` публикует `ProductCreatedEvent`.
+   - `EmailNotificationMicroservice` читает событие и выполняет отправку уведомления (через mock endpoint).
+
+2. **Transfer flow (оркестрация через события)**
+   - `TransferService` принимает HTTP-запрос на перевод.
+   - Публикуется `WithdrawalRequestedEvent` для шага списания.
+   - Публикуется `DepositRequestedEvent` для шага зачисления.
+   - `WithdrawalService` и `DepositService` обрабатывают соответствующие события.
+
+Оба сценария используют общий модуль `core` для единых event-контрактов между сервисами.
 
 ## Требования
 
@@ -48,6 +67,22 @@ cd ../EmailNotificationMicroservice
 ./mvnw spring-boot:run
 ```
 
+Для transfer-flow поднимите сервисы в отдельных терминалах:
+
+```bash
+# 5. REST API переводов
+cd ../TransferService
+./mvnw spring-boot:run
+
+# 6. Consumer списаний
+cd ../WithdrawalService
+./mvnw spring-boot:run
+
+# 7. Consumer зачислений
+cd ../DepositService
+./mvnw spring-boot:run
+```
+
 У обоих сервисов **`server.port=0`** — фактический HTTP-порт смотрите в логах (`Tomcat started on port ...`). Для вызова API используйте этот порт.
 
 Пример создания продукта:
@@ -59,6 +94,16 @@ curl -s -X POST "http://localhost:<PORT_PRODUCT>/product" \
 ```
 
 В логах **EmailNotificationMicroservice** должно появиться сообщение вида `Product created event received: Sample`.
+
+Пример создания перевода:
+
+```bash
+curl -s -X POST "http://localhost:<PORT_TRANSFER>/transfers" \
+  -H "Content-Type: application/json" \
+  -d '{"senderId":"user-1","recipientId":"user-2","amount":120.50}'
+```
+
+После вызова ожидайте логи обработки в `WithdrawalService` и `DepositService`.
 
 ## Kafka через Docker Compose
 
