@@ -185,6 +185,20 @@ cd EmailNotificationMicroservice
 
 Подробно про API, настройки продюсера Kafka, топик и Postman — в [**ProductMicroservice/README.md**](ProductMicroservice/README.md). Команды для Kafka CLI — в [**ProductMicroservice/KAFKA-KOMANDY.md**](ProductMicroservice/KAFKA-KOMANDY.md).
 
+## Тесты
+
+Быстрый запуск тестов по модулю переводов:
+
+```bash
+cd TransferService
+mvn test
+```
+
+Что покрыто в `TransferService`:
+
+- `TransferServiceImplTest` проверяет happy-path и ошибки (недоступный remote-service, ошибка Kafka, ошибка сохранения в `TransferRepository`) и гарантирует корректную публикацию/непубликацию событий.
+- `KafkaConfigTest` проверяет критичные producer-настройки, создание Kafka/JPA transaction manager и именование топиков.
+
 ## Стек
 
 - Java 17, Spring Boot 4.0.x, Spring Kafka  

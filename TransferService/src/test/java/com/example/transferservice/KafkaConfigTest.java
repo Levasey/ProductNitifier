@@ -2,14 +2,19 @@ package com.example.transferservice;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.junit.jupiter.api.Test;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.transaction.KafkaTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import jakarta.persistence.EntityManagerFactory;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 class KafkaConfigTest {
 
@@ -41,6 +46,29 @@ class KafkaConfigTest {
 
         assertEquals("withdraw-topic", config.createWithdrawTopic().name());
         assertEquals("deposit-topic", config.createDepositTopic().name());
+    }
+
+    @Test
+    void kafkaBeans_areCreated() {
+        KafkaConfig config = configWithValues();
+        ProducerFactory<String, Object> producerFactory = config.producerFactory();
+
+        KafkaTemplate<String, Object> kafkaTemplate = config.kafkaTemplate(producerFactory);
+        KafkaTransactionManager<String, Object> transactionManager = config.kafkaTransactionManager(producerFactory);
+
+        assertNotNull(kafkaTemplate);
+        assertNotNull(transactionManager);
+    }
+
+    @Test
+    void jpaTransactionManager_isCreatedForEntityManagerFactory() {
+        KafkaConfig config = configWithValues();
+        EntityManagerFactory entityManagerFactory = mock(EntityManagerFactory.class);
+
+        JpaTransactionManager transactionManager = config.jpaTransactionManager(entityManagerFactory);
+
+        assertNotNull(transactionManager);
+        assertEquals(entityManagerFactory, transactionManager.getEntityManagerFactory());
     }
 
     private KafkaConfig configWithValues() {

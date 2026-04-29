@@ -2,6 +2,8 @@ package com.example.transferservice.service;
 
 import com.example.transferservice.error.TransferServiceException;
 import com.example.transferservice.model.TransferRestModel;
+import com.example.transferservice.persistance.TransferEntity;
+import com.example.transferservice.persistance.TransferRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
@@ -18,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +29,9 @@ class TransferServiceImplTest {
     private final KafkaTemplate<String, Object> kafkaTemplate = mock(KafkaTemplate.class);
     private final Environment environment = mock(Environment.class);
     private final RestTemplate restTemplate = mock(RestTemplate.class);
-    private final TransferServiceImpl transferService = new TransferServiceImpl(kafkaTemplate, environment, restTemplate);
+    private final TransferRepository transferRepository = mock(TransferRepository.class);
+    private final TransferServiceImpl transferService =
+            new TransferServiceImpl(kafkaTemplate, environment, restTemplate, transferRepository);
 
     @Test
     void transfer_whenRemoteServiceSucceeds_sendsWithdrawalAndDepositEvents() {
@@ -41,6 +46,7 @@ class TransferServiceImplTest {
         boolean result = transferService.transfer(request);
 
         assertTrue(result);
+        verify(transferRepository).save(any(TransferEntity.class));
         verify(kafkaTemplate).send(eq("withdraw-topic"), any());
         verify(kafkaTemplate).send(eq("deposit-topic"), any());
     }
@@ -57,6 +63,7 @@ class TransferServiceImplTest {
 
         assertThrows(TransferServiceException.class, () -> transferService.transfer(request));
 
+        verify(transferRepository).save(any(TransferEntity.class));
         verify(kafkaTemplate).send(eq("withdraw-topic"), any());
         verify(kafkaTemplate, never()).send(eq("deposit-topic"), any());
     }
@@ -68,6 +75,18 @@ class TransferServiceImplTest {
         when(kafkaTemplate.send(eq("withdraw-topic"), any())).thenThrow(new RuntimeException("kafka down"));
 
         assertThrows(TransferServiceException.class, () -> transferService.transfer(request));
+        verify(transferRepository).save(any(TransferEntity.class));
+    }
+
+    @Test
+    void transfer_whenSaveFails_wrapsExceptionAndSkipsKafkaCalls() {
+        TransferRestModel request = transferRequest();
+        when(transferRepository.save(any(TransferEntity.class))).thenThrow(new RuntimeException("db down"));
+
+        assertThrows(TransferServiceException.class, () -> transferService.transfer(request));
+
+        verify(transferRepository, times(1)).save(any(TransferEntity.class));
+        verify(kafkaTemplate, never()).send(any(String.class), any());
     }
 
     private TransferRestModel transferRequest() {
