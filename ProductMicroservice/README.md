@@ -16,6 +16,33 @@
 
 При ошибке в обработчике возможен ответ **500** с телом `ErrorMessage` (см. [`ProductController`](src/main/java/com/example/productmicroservice/controller/ProductController.java)).
 
+### Валидация и ответы `400 Bad Request`
+
+DTO [`CreateProductDto`](src/main/java/com/example/productmicroservice/service/dto/CreateProductDto.java) валидируется аннотациями Bean Validation:
+
+- `title` — `@NotBlank` (`"title is required"`)
+- `price` — `@NotNull` + `@DecimalMin("0.01")`
+- `quantity` — `@NotNull` + `@Positive`
+
+Глобальный обработчик [`RestExceptionHandler`](src/main/java/com/example/productmicroservice/exception/RestExceptionHandler.java) возвращает:
+
+- при ошибках валидации (`MethodArgumentNotValidException`) — `400` и JSON с ошибками по полям, например:
+
+```json
+{
+  "title": "title is required",
+  "price": "price must be at least 0.01"
+}
+```
+
+- при некорректном JSON (`HttpMessageNotReadableException`) — `400` и тело:
+
+```json
+{
+  "error": "Invalid request body"
+}
+```
+
 `server.port=0` — порт Tomcat **случайный** при каждом запуске; смотрите строку вида `Tomcat started on port ...` в логах.
 
 ## Быстрый старт
@@ -92,6 +119,12 @@ curl -s -X POST "http://localhost:<PORT>/product" \
 ```bash
 ./mvnw verify
 ```
+
+Ключевые тесты в модуле:
+
+- `ProductControllerWebMvcTest` — HTTP-контракт контроллера: `201`, `500`, валидационные `400`, malformed JSON.
+- `ProductApiIntegrationTest` — end-to-end: `POST /product` публикует `ProductCreatedEvent` в Kafka (Embedded Kafka).
+- `ProductCreatedEventSerializationTest` — JSON round-trip сериализации/десериализации события.
 
 ## Стек
 
