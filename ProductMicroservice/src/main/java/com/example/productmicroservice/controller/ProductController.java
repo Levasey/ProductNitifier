@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 import java.util.Date;
 
 @RestController
@@ -22,7 +24,7 @@ public class ProductController {
         this.productService = productService;
     }
     @PostMapping
-    public ResponseEntity<Object> createProduct(@RequestBody CreateProductDto createProductDto) {
+    public ResponseEntity<Object> createProduct(@Valid @RequestBody CreateProductDto createProductDto) {
         String productId = null;
         try {
             productId = productService.createProduct(createProductDto);

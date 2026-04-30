@@ -44,6 +44,12 @@ public class KafkaConfig {
     @Value("${spring.kafka.producer.properties.max.in.flight.requests.per.connection}")
     private String maxInFlightRequests;
 
+    @Value("${kafka.topic.product-created.replicas:3}")
+    private int productCreatedTopicReplicas;
+
+    @Value("${kafka.topic.product-created.min-insync-replicas:2}")
+    private String productCreatedTopicMinInsyncReplicas;
+
     Map<String, Object> producerConfigs() {
         Map<String, Object> config = new HashMap<>();
 
@@ -74,8 +80,8 @@ public class KafkaConfig {
     NewTopic createTopic() {
         return TopicBuilder.name("product-created-events-topic")
                 .partitions(3)
-                .replicas(3)
-                .configs(Map.of("min.insync.replicas", "2"))
+                .replicas(productCreatedTopicReplicas)
+                .configs(Map.of("min.insync.replicas", productCreatedTopicMinInsyncReplicas))
                 .build();
     }
 }

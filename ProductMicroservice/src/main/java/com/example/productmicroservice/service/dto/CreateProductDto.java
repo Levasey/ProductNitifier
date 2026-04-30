@@ -1,10 +1,22 @@
 package com.example.productmicroservice.service.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 
 public class CreateProductDto {
+    @NotBlank(message = "title is required")
     private String title;
+
+    @NotNull(message = "price is required")
+    @DecimalMin(value = "0.01", inclusive = true, message = "price must be at least 0.01")
     private BigDecimal price;
+
+    @NotNull(message = "quantity is required")
+    @Positive(message = "quantity must be positive")
     private Integer quantity;
 
     public CreateProductDto() {}

@@ -27,6 +27,8 @@ class KafkaConfigTest {
         KafkaConfig config = configWithValues();
 
         assertEquals("product-created-events-topic", config.createTopic().name());
+        assertEquals(3, config.createTopic().numPartitions());
+        assertEquals((short) 3, config.createTopic().replicationFactor());
         assertNotNull(config.createTopic().configs());
         assertEquals("2", config.createTopic().configs().get("min.insync.replicas"));
     }
@@ -42,6 +44,8 @@ class KafkaConfigTest {
         ReflectionTestUtils.setField(config, "requestTimeout", "30000");
         ReflectionTestUtils.setField(config, "idempotence", "true");
         ReflectionTestUtils.setField(config, "maxInFlightRequests", "5");
+        ReflectionTestUtils.setField(config, "productCreatedTopicReplicas", 3);
+        ReflectionTestUtils.setField(config, "productCreatedTopicMinInsyncReplicas", "2");
         return config;
     }
 }
