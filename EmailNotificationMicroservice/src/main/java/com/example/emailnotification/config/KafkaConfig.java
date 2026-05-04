@@ -17,6 +17,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
+import org.springframework.util.StringUtils;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
@@ -38,7 +39,13 @@ public class KafkaConfig {
         config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JacksonJsonDeserializer.class);
         config.put(JacksonJsonDeserializer.TRUSTED_PACKAGES,
                 environment.getProperty("spring.kafka.consumer.properties.spring.json.trusted.packages"));
+        String jsonValueDefaultType = environment.getProperty(
+                "spring.kafka.consumer.properties.spring.json.value.default.type");
+        if (StringUtils.hasText(jsonValueDefaultType)) {
+            config.put(JacksonJsonDeserializer.VALUE_DEFAULT_TYPE, jsonValueDefaultType);
+        }
         config.put(ConsumerConfig.GROUP_ID_CONFIG, environment.getProperty("spring.kafka.consumer.group-id"));
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, environment.getProperty("spring.kafka.consumer.auto-offset-reset"));
 
         return new DefaultKafkaConsumerFactory<>(config);
     }
